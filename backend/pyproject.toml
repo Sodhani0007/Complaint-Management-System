@@ -1,0 +1,26 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "BLE"]
+
+# Every ignore below is a deliberate, documented exception, not a blanket
+# suppression — see the reason in each comment.
+ignore = [
+    "B008",   # FastAPI's Depends()/File() as default args IS the correct
+              # idiom (FastAPI's own docs use this pattern) — not a real bug.
+]
+
+[tool.ruff.lint.per-file-ignores]
+# SQLAlchemy 2.0's Mapped["ClassName"] forward-ref strings in relationship()
+# are resolved by SQLAlchemy's mapper registry at runtime, not standard
+# Python name resolution — ruff's F821 can't see that, so it's a false
+# positive specific to this ORM pattern, not a real undefined-name bug.
+"app/models/*.py" = ["F821"]
+
+# llm_client.py deliberately catches a broad Exception in the retry loop —
+# any transient failure (network, rate limit, timeout) should trigger a
+# retry, and narrowing this to specific exception types would mean missing
+# failure modes the retry logic is explicitly designed to handle.
+"app/ai/llm_client.py" = ["BLE001"]
