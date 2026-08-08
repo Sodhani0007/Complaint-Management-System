@@ -50,6 +50,20 @@ class ComplaintRepository:
         stmt = select(Complaint).where(Complaint.batch_id == batch_id)
         return len(self.db.execute(stmt).scalars().all())
 
+    def find_candidate_duplicates(self, product_id: int, exclude_complaint_id: int, limit: int = 20) -> list[Complaint]:
+        """Candidates for duplicate detection: other complaints on the same
+        product, most recent first, capped at `limit` for the similarity
+        pass to stay cheap — this is a demo-scale heuristic, not meant to
+        scale to a product with thousands of complaints (see docs note on
+        the embeddings alternative for that case)."""
+        stmt = (
+            select(Complaint)
+            .where(Complaint.product_id == product_id, Complaint.id != exclude_complaint_id)
+            .order_by(Complaint.created_at.desc())
+            .limit(limit)
+        )
+        return list(self.db.execute(stmt).scalars().all())
+
     # --- complaints ---
 
     def create_complaint(self, complaint: Complaint) -> Complaint:

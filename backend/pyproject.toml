@@ -24,3 +24,10 @@ ignore = [
 # retry, and narrowing this to specific exception types would mean missing
 # failure modes the retry logic is explicitly designed to handle.
 "app/ai/llm_client.py" = ["BLE001"]
+
+# completeness.py's optional LLM warnings pass is explicitly best-effort
+# (see module docstring) — any failure here should degrade to "no warnings"
+# rather than take down the whole completeness-check endpoint, which is the
+# same reasoning as llm_client.py above, just at the node level instead of
+# the client level.
+"app/ai/nodes/completeness.py" = ["BLE001"]

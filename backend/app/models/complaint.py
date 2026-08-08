@@ -60,6 +60,7 @@ class Complaint(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     batch: Mapped["Batch"] = relationship(back_populates="complaints")
+    product: Mapped["Product"] = relationship()
     documents: Mapped[list["ComplaintDocument"]] = relationship(
         back_populates="complaint", cascade="all, delete-orphan"
     )
