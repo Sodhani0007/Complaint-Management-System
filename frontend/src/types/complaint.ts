@@ -61,6 +61,48 @@ export interface ComplaintRead extends ComplaintCreatePayload {
   updated_at: string;
 }
 
+/** Bonus AI feature response shapes — mirror app/schemas/bonus_features.py exactly. */
+
+export interface CompletenessCheckResult {
+  is_complete: boolean;
+  missing_fields: string[];
+  warnings: string[];
+  suggested_next_action: string;
+  confidence: number;
+}
+
+export interface SummaryResult {
+  summary: string;
+  product: string | null;
+  batch: string | null;
+  customer: string | null;
+  issue: string | null;
+  severity: string | null;
+  potential_impact: string;
+  recommended_next_step: string;
+  confidence: number;
+}
+
+export interface DuplicateMatch {
+  matched_complaint_id: number;
+  similarity_score: number;
+  reason: string;
+}
+
+export interface DuplicateCheckResult {
+  is_duplicate: boolean;
+  matches: DuplicateMatch[];
+}
+
+export interface RiskAssessmentResult {
+  severity: string;
+  priority: string;
+  confidence: number;
+  reasoning: string;
+  recommended_escalation: string;
+  business_rule_applied: boolean;
+}
+
 /** Empty-state factory — used both to initialize the Redux slice and to
  * reset the form, so there's exactly one definition of "what a blank
  * complaint looks like" instead of duplicated object literals. */

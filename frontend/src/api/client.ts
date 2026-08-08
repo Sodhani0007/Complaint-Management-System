@@ -1,5 +1,13 @@
 import axios from "axios";
-import type { ComplaintCreatePayload, ComplaintRead, ExtractionResponse } from "../types/complaint";
+import type {
+  ComplaintCreatePayload,
+  ComplaintRead,
+  CompletenessCheckResult,
+  DuplicateCheckResult,
+  ExtractionResponse,
+  RiskAssessmentResult,
+  SummaryResult,
+} from "../types/complaint";
 
 const client = axios.create({
   baseURL: "/api/v1",
@@ -29,6 +37,28 @@ export async function saveComplaint(payload: ComplaintCreatePayload): Promise<Co
 
 export async function getComplaint(id: number): Promise<ComplaintRead> {
   const { data } = await client.get<ComplaintRead>(`/complaints/${id}`);
+  return data;
+}
+
+// --- Bonus AI features — all operate on an already-saved complaint ---
+
+export async function checkCompleteness(complaintId: number): Promise<CompletenessCheckResult> {
+  const { data } = await client.post<CompletenessCheckResult>(`/complaints/${complaintId}/completeness-check`);
+  return data;
+}
+
+export async function generateSummary(complaintId: number): Promise<SummaryResult> {
+  const { data } = await client.post<SummaryResult>(`/complaints/${complaintId}/summary`);
+  return data;
+}
+
+export async function checkDuplicates(complaintId: number): Promise<DuplicateCheckResult> {
+  const { data } = await client.post<DuplicateCheckResult>(`/complaints/${complaintId}/duplicate-check`);
+  return data;
+}
+
+export async function getRiskAssessment(complaintId: number): Promise<RiskAssessmentResult> {
+  const { data } = await client.post<RiskAssessmentResult>(`/complaints/${complaintId}/risk-assessment`);
   return data;
 }
 
