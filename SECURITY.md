@@ -20,9 +20,19 @@ This is a demo/assignment project, not a hardened production system. Notably:
   publicly without adding auth first.
 - **Secrets**: `GROQ_API_KEY` and `DATABASE_URL` must be supplied via environment variables /
   `.env` (never committed — see `.gitignore`). `.env.example` contains placeholders only.
-- **File uploads**: validated for extension and size (`MAX_UPLOAD_SIZE_MB`), but not scanned for
-  malicious content — don't accept uploads from untrusted sources in a production deployment
-  without adding that.
+- **File uploads**: validated for extension and size (`MAX_UPLOAD_SIZE_MB`), enforced via a
+  streaming size check that aborts as soon as the limit is exceeded rather than buffering the
+  whole file first — but uploaded content is not scanned for malicious payloads. Don't accept
+  uploads from untrusted sources in a production deployment without adding that.
+- **Prompt injection**: complaint descriptions and other extracted text are interpolated directly
+  into LLM prompts (`app/ai/prompts/*.py`) with no sanitization beyond triple-quote fencing, which
+  is not a robust defense. A malicious complaint description could attempt to influence the LLM's
+  severity/priority classification or summary output via injected instructions. Blast radius is
+  partially contained by Pydantic schema validation on the LLM's structured output (it can't
+  return anything outside the defined shape) and by the deterministic safety-keyword rule in
+  `risk_classify.py`, which overrides the LLM's severity/priority regardless of what it was
+  manipulated into saying — but this is not a complete mitigation. Not fixed in this pass;
+  documenting honestly rather than claiming it's handled.
 - **CORS**: `CORS_ORIGINS` defaults to localhost dev origins; update this before deploying.
 
 ## Supported Versions

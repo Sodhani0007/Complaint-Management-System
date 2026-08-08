@@ -69,3 +69,56 @@ def test_create_complaint_missing_required_field_returns_422(client):
     payload = {"product_name": "Test Product", "batch_lot_number": "TEST-BATCH-002"}  # missing description
     response = client.post("/api/v1/complaints", json=payload)
     assert response.status_code == 422
+
+
+# --- File upload extraction path ---
+# Not covered by any prior test — the fix to app/api/v1/complaints.py's
+# streaming size check (reading in bounded chunks and aborting early,
+# instead of reading the whole file into memory before checking) needed
+# something to actually exercise it.
+
+
+def test_extract_from_file_happy_path_with_mocked_llm(client):
+    from unittest.mock import patch
+
+    mocked_extraction = {
+        "product_name": "Test Product 500mg",
+        "batch_lot_number": "UPLOAD-TEST-001",
+        "description": "Uploaded complaint text describing a quality issue.",
+        "confidence": 0.9,
+    }
+    mocked_risk = {"severity": "Minor", "priority": "Low", "confidence": 0.8, "reasoning": "Low apparent impact."}
+
+    with (
+        patch("app.ai.nodes.extract.call_llm_for_json", return_value=mocked_extraction),
+        patch("app.ai.nodes.risk_classify.call_llm_for_json", return_value=mocked_risk),
+    ):
+        files = {"file": ("complaint.txt", b"A short sample complaint text file.", "text/plain")}
+        response = client.post("/api/v1/complaints/extract", files=files)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["fields"]["product_name"] == "Test Product 500mg"
+    assert body["confidence_score"] == 0.9
+
+
+def test_extract_from_file_rejects_unsupported_extension(client):
+    files = {"file": ("malware.exe", b"not a real complaint document", "application/octet-stream")}
+    response = client.post("/api/v1/complaints/extract", files=files)
+    assert response.status_code == 400
+    assert "Unsupported file type" in response.json()["detail"]
+
+
+def test_extract_from_file_rejects_oversized_upload(client):
+    """Verifies the streaming size check actually aborts early rather than
+    reading the whole oversized file into memory before rejecting it."""
+    # MAX_UPLOAD_SIZE_MB defaults to 10 — send well over that.
+    oversized_content = b"x" * (11 * 1024 * 1024)
+    files = {"file": ("large_complaint.txt", oversized_content, "text/plain")}
+    response = client.post("/api/v1/complaints/extract", files=files)
+    assert response.status_code == 413
+
+
+def test_extract_requires_file_or_text(client):
+    response = client.post("/api/v1/complaints/extract")
+    assert response.status_code == 400

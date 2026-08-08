@@ -42,15 +42,40 @@ async def extract_complaint(
     if file is None and not text:
         raise HTTPException(status_code=400, detail="Either 'file' or 'text' must be provided")
 
+    # Validated before the try block on purpose — this used to raise
+    # HTTPException from inside the try/except below, where the bare
+    # `except Exception` handler was catching it (HTTPException IS an
+    # Exception) and converting a deliberate 400 into a misleading 502.
+    # Caught by test_extract_from_file_rejects_unsupported_extension.
+    ext = os.path.splitext(file.filename or "")[1].lower() if file is not None else None
+    if file is not None and ext not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}",
+        )
+
     try:
         if file is not None:
-            ext = os.path.splitext(file.filename or "")[1].lower()
-            if ext not in SUPPORTED_EXTENSIONS:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Unsupported file type '{ext}'. Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}",
-                )
-            file_bytes = await file.read()
+            # Read in bounded chunks and abort as soon as the limit is
+            # exceeded, rather than reading the whole file into memory
+            # first and rejecting it afterward — the previous version did
+            # exactly that, which meant an oversized upload was fully
+            # buffered before extraction_service ever got a chance to
+            # reject it. A malicious multi-GB upload would have consumed
+            # memory regardless of the eventual 413.
+            max_bytes = extraction_service.max_upload_bytes
+            chunk_size = 1024 * 1024  # 1MB
+            chunks: list[bytes] = []
+            total_read = 0
+            while True:
+                chunk = await file.read(chunk_size)
+                if not chunk:
+                    break
+                total_read += len(chunk)
+                if total_read > max_bytes:
+                    raise FileTooLargeError(f"File exceeds {max_bytes // (1024 * 1024)}MB limit")
+                chunks.append(chunk)
+            file_bytes = b"".join(chunks)
             return extraction_service.extract_from_file(file_bytes, ext)
 
         return extraction_service.extract_from_text(text)
@@ -61,6 +86,8 @@ async def extract_complaint(
         raise HTTPException(status_code=413, detail=str(e)) from e
     except NoInputProvidedError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Unexpected error during extraction")
         raise HTTPException(status_code=502, detail="AI extraction service unavailable, please try again") from e
