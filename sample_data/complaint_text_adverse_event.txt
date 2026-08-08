@@ -1,0 +1,20 @@
+Complaint Source: Patient (via Customer Care hotline)
+Customer Name: S. Kulkarni
+Product: Cetirizine 10mg Tablets
+Product Strength/Grade: 10mg
+Batch/Lot Number: CTZ-2026-0455
+Manufacturing Date: 2026-02-10
+Expiry Date: 2028-02-10
+Complaint Type: Adverse Event
+Complaint Date: 2026-08-04
+Quantity Affected: 1 strip (10 tablets)
+
+Complaint Description:
+Customer reports experiencing a severe allergic reaction, including facial
+swelling and difficulty breathing, approximately 30 minutes after taking
+one tablet from this batch. Customer sought emergency medical attention
+and was treated with antihistamines and observed for several hours before
+discharge. Customer has requested a formal investigation and wants to know
+if other patients who received this batch have reported similar reactions.
+Remaining tablets from the strip have been retained by the customer for
+potential lab analysis if requested.
