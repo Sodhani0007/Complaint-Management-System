@@ -173,9 +173,30 @@ Endpoint summary:
 | `POST` | `/api/v1/complaints` | Save a reviewed/confirmed complaint |
 | `GET` | `/api/v1/complaints/{id}` | Fetch a single complaint |
 | `GET` | `/api/v1/complaints` | List/filter complaints |
+| `POST` | `/api/v1/complaints/{id}/completeness-check` | Check whether a saved complaint has all required fields |
+| `POST` | `/api/v1/complaints/{id}/summary` | Generate a QA-oriented complaint summary |
+| `POST` | `/api/v1/complaints/{id}/duplicate-check` | Find possible duplicate complaints on the same product |
 | `GET` | `/health` | Health check |
 
 Full request/response schemas are in [`docs/architecture.md`](docs/architecture.md#step-5--api-design).
+
+## AI Bonus Features
+
+Three of the assignment's six optional bonus features are implemented, on top of the required AI
+Risk Classification — which itself was **improved** (per the assignment's Phase 12 instruction to
+improve rather than duplicate) with a dedicated on-demand re-assessment endpoint. All four are
+on-demand: they run after a complaint is saved, triggered from the **AI Insights** panel that
+appears below the form once you save a complaint, not automatically as part of intake.
+
+| Feature | How it works | Why this approach |
+|---|---|---|
+| **Completeness Checker** | Deterministic required-fields check, plus an optional LLM pass for qualitative warnings (e.g. "description looks thin for a Critical complaint") | The core is/isn't-complete answer is correctness-critical — a rule-based check is 100% reliable where an LLM guess wouldn't be. The optional LLM pass degrades gracefully to "no warnings" on any failure rather than blocking the result |
+| **Complaint Summary** | Single LLM call (same `call_llm_for_json` pattern as extraction/risk classification), explicitly instructed to return `"insufficient_information"` rather than fabricate | Genuinely benefits from LLM prose generation, unlike completeness |
+| **Duplicate Complaint Detection** | Queries other complaints on the same product, scores description similarity with `difflib.SequenceMatcher`, boosts the score if it's also the same batch | Deliberately not embeddings-based — a free, deterministic similarity score is good enough at this data scale; see the trade-off note in `complaint_service.check_duplicates` for when embeddings would be worth the added infrastructure |
+| **Risk Assessment (re-run)** | Re-invokes the same `classify_risk` node used at intake, against the complaint's *current* saved data — useful if the description was edited after initial extraction. Returns reasoning and a `business_rule_applied` flag the original intake response never persisted | "Improve, don't duplicate" — same node, same safety-keyword escalation rule (verified by test to override the LLM even when the model itself gets it wrong), new on-demand retrieval path |
+
+**Not yet implemented** (designed in `docs/architecture.md` Step 12, same extension pattern as
+the four above would apply): Root Cause Recommendation, CAPA Recommendation.
 
 ## Deployment
 
@@ -184,12 +205,15 @@ Railway, and Docker).
 
 ## Future Improvements
 
-- Implement remaining bonus AI features (Duplicate Detection, CAPA Recommendation, Root Cause
-  Recommendation, Completeness Checker) — designed in `docs/architecture.md` Step 12, not yet built
+- Implement remaining bonus AI features (Root Cause Recommendation, CAPA Recommendation) —
+  designed in `docs/architecture.md` Step 12, not yet built
 - Replace `create_all` with Alembic migrations
 - Add authentication (routers are already structured to accept a `Depends(get_current_user)`)
 - Add a complaint list/detail view with `react-router`
-- Semantic-similarity duplicate detection via embeddings
+- Semantic-similarity duplicate detection via embeddings (current implementation uses
+  `difflib.SequenceMatcher` — see `docs/architecture.md` and `AI Bonus Features` above for the
+  trade-off reasoning)
+
 
 ## License
 

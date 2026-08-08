@@ -5,22 +5,18 @@ committed dates.
 
 ## Near-term
 
-- [ ] **Complaint Summary** (bonus AI feature) — new LangGraph node, reuses existing extracted
-      description; cheapest to add, highest visible payoff in a demo
-- [ ] **Duplicate Complaint Detection** (bonus AI feature) — batch-based DB query (already
-      possible today via `count_prior_complaints_for_batch`) plus a text-similarity pass over
-      descriptions
+- [ ] Root Cause Recommendation (bonus AI feature)
+- [ ] CAPA Recommendation (bonus AI feature)
 - [ ] Replace `Base.metadata.create_all` with proper Alembic migrations
-- [ ] Backend test coverage beyond the current smoke tests — unit tests per service with a mocked
-      repository, and a dedicated test for the LangGraph retry-loop routing logic
+- [ ] Backend test coverage beyond the current smoke/bonus-feature tests — a dedicated test for
+      the LangGraph retry-loop routing logic in the extraction pipeline itself
 
 ## Mid-term
 
 - [ ] Authentication (`Depends(get_current_user)` — routers are already structured to accept it)
 - [ ] Complaint list/detail view with `react-router` (currently single-route by design)
-- [ ] Root Cause Recommendation and CAPA Recommendation bonus features
-- [ ] Completeness Checker (deterministic + LLM hybrid, as designed in `docs/architecture.md`
-      Step 12)
+- [ ] Completeness Checker's optional LLM warnings pass — currently best-effort/silent on failure;
+      consider surfacing "warnings unavailable" in the UI rather than silently returning empty
 
 ## Longer-term / stretch
 
