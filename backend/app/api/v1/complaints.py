@@ -17,6 +17,12 @@ from app.core.exceptions import (
     NoInputProvidedError,
     UnsupportedFileTypeError,
 )
+from app.schemas.bonus_features import (
+    CompletenessCheckResult,
+    DuplicateCheckResult,
+    RiskAssessmentResult,
+    SummaryResult,
+)
 from app.schemas.complaint import ComplaintCreate, ComplaintListParams, ComplaintRead
 from app.schemas.extraction import ExtractionResponse
 from app.services.complaint_service import ComplaintService
@@ -85,3 +91,38 @@ def list_complaints(
     service: ComplaintService = Depends(get_complaint_service),
 ):
     return service.list_complaints(params)
+
+
+# --- Bonus AI features — all operate on an already-saved complaint ---
+
+
+@router.post("/{complaint_id}/completeness-check", response_model=CompletenessCheckResult)
+def completeness_check(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
+    try:
+        return service.check_completeness(complaint_id)
+    except ComplaintNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.post("/{complaint_id}/summary", response_model=SummaryResult)
+def complaint_summary(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
+    try:
+        return service.generate_summary(complaint_id)
+    except ComplaintNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.post("/{complaint_id}/duplicate-check", response_model=DuplicateCheckResult)
+def duplicate_check(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
+    try:
+        return service.check_duplicates(complaint_id)
+    except ComplaintNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.post("/{complaint_id}/risk-assessment", response_model=RiskAssessmentResult)
+def risk_assessment(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
+    try:
+        return service.get_risk_assessment(complaint_id)
+    except ComplaintNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
