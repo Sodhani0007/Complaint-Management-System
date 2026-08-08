@@ -25,9 +25,17 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/complaints_db"
 
     # --- Groq / LLM ---
+    # NOTE: the assignment's originally-specified models (gemma2-9b-it,
+    # llama-3.3-70b-versatile) have since been deprecated/scheduled for
+    # shutdown by Groq (see https://console.groq.com/docs/deprecations,
+    # checked 2026-08-08). Using their currently-recommended, non-deprecated
+    # replacements instead. If Groq's lineup changes again, check that page
+    # and update these two defaults (or override via .env — nothing else in
+    # the codebase needs to change, since llm_client.py takes the model name
+    # as a parameter rather than hardcoding it).
     GROQ_API_KEY: str = ""
-    GROQ_EXTRACTION_MODEL: str = "gemma2-9b-it"
-    GROQ_REASONING_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_EXTRACTION_MODEL: str = "openai/gpt-oss-20b"
+    GROQ_REASONING_MODEL: str = "openai/gpt-oss-120b"
     LLM_MAX_RETRIES: int = 2
     LLM_TIMEOUT_SECONDS: int = 30
 

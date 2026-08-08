@@ -13,6 +13,7 @@ import logging
 import uuid
 
 from app.ai.graph import run_extraction_pipeline
+from app.config import settings
 from app.core.exceptions import FileTooLargeError, NoInputProvidedError
 from app.schemas.extraction import ExtractedFields, ExtractionResponse
 from app.services.document_service import parse_document
@@ -51,6 +52,6 @@ class ExtractionService:
             extraction_id=str(uuid.uuid4()),
             fields=ExtractedFields(**result["fields"]),
             confidence_score=result.get("extraction_confidence", 0.0),
-            model_used="gemma2-9b-it",
+            model_used=settings.GROQ_EXTRACTION_MODEL,
             missing_required_fields=result.get("missing_required_fields", []),
         )

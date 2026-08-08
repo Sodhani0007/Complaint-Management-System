@@ -20,7 +20,7 @@ AIVOA AI Product Engineer internship assignment.
 - **Backend foundation**: FastAPI app, SQLAlchemy models (`Product`, `Batch`, `Complaint`,
   `ComplaintDocument`, `AIExtraction`), Pydantic schemas, config via `pydantic-settings`
 - **LangGraph AI pipeline**: extraction → validation (with retry loop) → risk classification →
-  finalize, backed by Groq (`gemma2-9b-it` extraction, `llama-3.3-70b-versatile` reasoning)
+  finalize, backed by Groq (`openai/gpt-oss-20b` extraction, `openai/gpt-oss-120b` reasoning — updated post-launch after Groq deprecated the original models)
 - **Deterministic safety-net rule**: safety-keyword complaints are force-classified as Critical
   severity regardless of LLM output
 - **Document parsing**: PDF, DOCX, EML, TXT → plain text feeding the same extraction pipeline

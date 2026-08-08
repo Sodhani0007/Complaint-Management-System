@@ -28,7 +28,7 @@ flowchart LR
     User([User]) -->|upload / paste| FE[React + Redux Frontend]
     FE -->|REST/JSON| API[FastAPI Backend]
     API --> Graph[LangGraph Pipeline]
-    Graph -->|extract / classify| Groq[Groq LLMs<br/>gemma2-9b-it / llama-3.3-70b]
+    Graph -->|extract / classify| Groq[Groq LLMs<br/>openai/gpt-oss-20b / openai/gpt-oss-120b]
     API --> DB[(PostgreSQL / MySQL)]
     API --> Files[Uploaded Documents]
 
@@ -51,9 +51,17 @@ API contracts, LangGraph node/edge design, prompts, and UI direction.
 | Frontend | React 18, Redux Toolkit, TypeScript, Vite |
 | Backend | FastAPI, SQLAlchemy, Pydantic |
 | AI Orchestration | LangGraph, LangChain |
-| LLM Provider | Groq (`gemma2-9b-it`, `llama-3.3-70b-versatile`) |
+| LLM Provider | Groq (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — see note below) |
 | Database | PostgreSQL (or MySQL) |
 | Deployment | Docker, Docker Compose |
+
+> **Note on model choice:** the assignment originally specified `gemma2-9b-it` and
+> `llama-3.3-70b-versatile`. Groq deprecated `gemma2-9b-it` on 10/08/2025 and is deprecating
+> `llama-3.3-70b-versatile` on 08/16/2026, so the codebase now defaults to their currently
+> recommended, non-deprecated replacements (`openai/gpt-oss-20b` and `openai/gpt-oss-120b`).
+> Worth mentioning proactively if asked about the tech stack in an interview — see
+> `console.groq.com/docs/deprecations` for the current state if this changes again.
+
 
 ## Project Structure
 
@@ -114,8 +122,8 @@ See [`backend/.env.example`](backend/.env.example) for the full list. Key variab
 |---|---|
 | `GROQ_API_KEY` | Your Groq API key (required) |
 | `DATABASE_URL` | SQLAlchemy connection string (Postgres or MySQL) |
-| `GROQ_EXTRACTION_MODEL` | Defaults to `gemma2-9b-it` |
-| `GROQ_REASONING_MODEL` | Defaults to `llama-3.3-70b-versatile` |
+| `GROQ_EXTRACTION_MODEL` | Defaults to `openai/gpt-oss-20b` (Groq deprecated the assignment-specified gemma2-9b-it on 10/08/2025) |
+| `GROQ_REASONING_MODEL` | Defaults to `openai/gpt-oss-120b` (Groq is deprecating llama-3.3-70b-versatile on 08/16/2026) |
 
 ## Running Locally (Docker)
 

@@ -2,7 +2,7 @@
 Structured logging setup. Called once from main.py at startup. Every AI call
 (model used, latency, confidence) and every request-level error should flow
 through this, since the log output is genuinely useful evidence in the demo
-video ("here's the log showing the LangGraph run picking gemma2-9b-it and
+video ("here's the log showing the LangGraph run picking openai/gpt-oss-20b and
 returning 0.87 confidence").
 """
 

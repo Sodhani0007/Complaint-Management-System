@@ -71,8 +71,8 @@ environment variable on whichever platform hosts the backend.
 |---|---|---|
 | `GROQ_API_KEY` | backend | required, never commit a real value |
 | `DATABASE_URL` | backend | SQLAlchemy connection string |
-| `GROQ_EXTRACTION_MODEL` | backend | defaults to `gemma2-9b-it` |
-| `GROQ_REASONING_MODEL` | backend | defaults to `llama-3.3-70b-versatile` |
+| `GROQ_EXTRACTION_MODEL` | backend | defaults to `openai/gpt-oss-20b` (updated after Groq deprecated gemma2-9b-it) |
+| `GROQ_REASONING_MODEL` | backend | defaults to `openai/gpt-oss-120b` (updated after Groq deprecated llama-3.3-70b-versatile) |
 | `CORS_ORIGINS` | backend | must include your deployed frontend's origin |
 | `VITE_API_BASE_URL` | frontend | only needed for split deployment (Option B) |
 

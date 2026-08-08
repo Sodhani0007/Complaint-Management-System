@@ -23,7 +23,7 @@
                                   ▼
                          ┌──────────────────┐
                          │   Groq API        │
-                         │  gemma2-9b-it /    │
+                         │  openai/gpt-oss-20b/    │
                          │  llama-3.3-70b     │
                          └──────────────────┘
 ```
@@ -291,7 +291,7 @@ Normalized to 3NF; `extracted_json` as JSONB/JSON is a deliberate denormalizatio
     "priority": "High"
   },
   "confidence_score": 0.87,
-  "model_used": "gemma2-9b-it"
+  "model_used": "openai/gpt-oss-20b"
 }
 ```
 **Validation:** file type in {pdf, docx, txt, eml}, max 10MB. Either `file` or `text` required, not neither.
