@@ -147,20 +147,6 @@ The LangGraph pipeline runs in-process inside the FastAPI backend — there's no
 microservice to stand up. It's invoked automatically whenever `/api/v1/complaints/extract` is
 called. See [`docs/architecture.md`](docs/architecture.md) for the node/edge design and prompts.
 
-## Screenshots
-
-> _Add screenshots of the running app here before submission — the two-pane intake form and the
-> extraction-in-progress state make the strongest demo images._
-
-`docs/screenshots/form-empty.png`
-`docs/screenshots/form-populated.png`
-`docs/screenshots/extraction-in-progress.png`
-
-## Demo Video
-
-> _Add links to both required videos here before submission:_
-> - **Feature demo** (5–10 min): `<link>`
-> - **Code walkthrough** (5–10 min): `<link>`
 
 ## API Documentation
 
