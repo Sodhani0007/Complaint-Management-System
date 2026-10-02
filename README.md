@@ -5,7 +5,6 @@ complaint document; a LangGraph-orchestrated pipeline extracts structured fields
 risk assessment into an editable review form — human-in-the-loop by design, never auto-saved
 without review.
 
-Built for the AIVOA AI Product Engineer internship assignment.
 
 ## Features
 
@@ -204,10 +203,6 @@ Railway, and Docker).
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
-
-## Author
-
-Built as part of the AIVOA AI Product Engineer internship assignment.
 
 ## Acknowledgements
 
