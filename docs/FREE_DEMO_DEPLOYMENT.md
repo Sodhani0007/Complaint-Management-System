@@ -13,9 +13,11 @@ Redis instance, paid database, or purchased domain.
 - Deployed branch: `feat/free-demo-deployment` (PR #1; not yet merged into `main`).
 - Verified on 2026-10-04: readiness, demo login, synthetic complaint save,
   list/detail retrieval, batch priority escalation, and live Groq text extraction.
-- Known limitation observed in the live test: the keyword safety rule can flag
-  negated phrases such as "No injury or adverse event" as Critical. Human review
-  remains necessary; negation-aware risk handling needs a dedicated follow-up.
+- The safety rule excludes a narrow grammar of explicit negative statements,
+  including "No injury or adverse event." Positive and uncertain safety mentions
+  still escalate. This is conservative pattern matching, not general language
+  understanding; human review remains necessary. Regression tests cover denials,
+  mixed positive/negative reports, uncertainty, and reassessment through the API.
 
 The steps below describe the intended deployment from `main` after review.
 The current demo uses the feature branch until that review and merge are complete.
