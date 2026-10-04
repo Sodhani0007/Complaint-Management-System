@@ -4,8 +4,11 @@
 
 Includes expiring sessions, owner login, synthetic sample mode, a saved-complaint
 inbox, persistent usage caps, Alembic migrations, and a Render Blueprint with a
-separately provisioned Neon database. A live deployment still requires hosting
-account configuration and the [deployment checks](docs/FREE_DEMO_DEPLOYMENT.md).
+separately provisioned Neon database.
+
+**[Open the live demo](https://complaints-demo.onrender.com/)** and choose **Enter demo**.
+The free API may take a little time to wake after inactivity. Use synthetic data only.
+See the [deployment guide](docs/FREE_DEMO_DEPLOYMENT.md) for setup and verification.
 
 All demo users share synthetic records. Organization isolation, investigation
 workflow, durable jobs, and server-side extraction provenance remain planned work.

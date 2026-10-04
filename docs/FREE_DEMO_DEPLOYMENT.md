@@ -6,6 +6,20 @@ Redis instance, paid database, or purchased domain.
 
 ## Account setup and deployment
 
+### Current demo
+
+- Frontend: https://complaints-demo.onrender.com/
+- API: https://complaints-api-jxuj.onrender.com
+- Deployed branch: `feat/free-demo-deployment` (PR #1; not yet merged into `main`).
+- Verified on 2026-10-04: readiness, demo login, synthetic complaint save,
+  list/detail retrieval, batch priority escalation, and live Groq text extraction.
+- Known limitation observed in the live test: the keyword safety rule can flag
+  negated phrases such as "No injury or adverse event" as Critical. Human review
+  remains necessary; negation-aware risk handling needs a dedicated follow-up.
+
+The steps below describe the intended deployment from `main` after review.
+The current demo uses the feature branch until that review and merge are complete.
+
 1. Create/sign in to Neon and Render using your own accounts. Do not send API keys
    or database passwords in a chat or commit them to Git.
 2. Create a **Free Neon PostgreSQL project**. Copy its connection string with TLS
