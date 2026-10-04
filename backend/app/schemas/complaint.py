@@ -16,19 +16,20 @@ from app.models.complaint import ComplaintStatus, Priority, Severity
 
 
 class ComplaintBase(BaseModel):
-    complaint_source: str | None = None
-    customer_name: str | None = None
-    complaint_type: str | None = None
+    complaint_source: str | None = Field(default=None, max_length=100)
+    customer_name: str | None = Field(default=None, max_length=255)
+    complaint_type: str | None = Field(default=None, max_length=100)
     complaint_date: date | None = None
-    quantity_affected: float | None = None
+    quantity_affected: float | None = Field(default=None, ge=0, le=99999999.99, allow_inf_nan=False)
     severity: Severity | None = None
     priority: Priority | None = None
 
 
 class ComplaintCreate(ComplaintBase):
-    product_name: str = Field(min_length=1)
-    batch_lot_number: str = Field(min_length=1)
-    description: str = Field(min_length=1)
+    model_config = ConfigDict(str_strip_whitespace=True)
+    product_name: str = Field(min_length=1, max_length=255)
+    batch_lot_number: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=20000)
     manufacturing_date: date | None = None
     expiry_date: date | None = None
 
@@ -37,8 +38,8 @@ class ComplaintCreate(ComplaintBase):
     # the DB (see AI Requirements in the architecture doc), so the frontend
     # is the thing passing this back to us rather than us caching it server-side.
     ai_extraction_snapshot: dict | None = None
-    ai_model_used: str | None = None
-    ai_confidence: float | None = None
+    ai_model_used: str | None = Field(default=None, max_length=100)
+    ai_confidence: float | None = Field(default=None, ge=0, le=1, allow_inf_nan=False)
 
     @field_validator("expiry_date")
     @classmethod

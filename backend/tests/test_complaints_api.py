@@ -20,13 +20,6 @@ from app.main import app
 from app.models import ai_extraction, batch, complaint, complaint_document, product  # noqa: F401
 
 
-@pytest.fixture(scope="module")
-def client():
-    Base.metadata.create_all(bind=engine)
-    yield TestClient(app)
-    Base.metadata.drop_all(bind=engine)
-
-
 def test_health_check(client):
     response = client.get("/health")
     assert response.status_code == 200

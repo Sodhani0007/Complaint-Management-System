@@ -10,6 +10,7 @@ different DB or API key just by changing .env, with zero code changes.
 
 from functools import lru_cache
 
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,7 +20,26 @@ class Settings(BaseSettings):
     # --- App ---
     APP_NAME: str = "Complaint Management System"
     ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    DEBUG: bool = False
+    DEMO_MODE: bool = False
+    ADMIN_EMAIL: str = ""
+    ADMIN_PASSWORD: str = ""
+    SESSION_TTL_MINUTES: int = Field(default=60, ge=5, le=1440)
+    AI_REQUESTS_PER_DAY: int = Field(default=30, ge=0)
+    COMPLAINTS_PER_DAY: int = Field(default=100, ge=0)
+    MAX_TEXT_LENGTH: int = Field(default=20000, ge=1, le=100000)
+
+    @model_validator(mode="after")
+    def validate_deployment(self):
+        if self.ENVIRONMENT == "production" and self.DEBUG:
+            raise ValueError("DEBUG must be false in production")
+        if bool(self.ADMIN_EMAIL) != bool(self.ADMIN_PASSWORD):
+            raise ValueError("Set both ADMIN_EMAIL and ADMIN_PASSWORD")
+        if self.ADMIN_PASSWORD and len(self.ADMIN_PASSWORD) < 16:
+            raise ValueError("ADMIN_PASSWORD must contain at least 16 characters")
+        if self.DATABASE_URL.startswith("postgres://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        return self
 
     # --- Database ---
     DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/complaints_db"

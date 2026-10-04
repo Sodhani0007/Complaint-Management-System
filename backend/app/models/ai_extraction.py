@@ -9,11 +9,9 @@ from app.db.base import Base
 
 class AIExtraction(Base):
     """
-    Audit record of every AI extraction attempt for a complaint — never
-    overwritten, always appended. This is what lets you answer "what did the
-    AI originally say vs. what did the human change" months later, which is
-    exactly the kind of traceability a regulated QMS record needs (see the
-    audit-trail discussion in the architecture doc's Step 1 problem framing).
+    Optional client-supplied snapshot saved with a confirmed complaint.
+    Not independent proof of an extraction attempt: server-owned provenance
+    and a full change history remain future work.
     """
 
     __tablename__ = "ai_extractions"
