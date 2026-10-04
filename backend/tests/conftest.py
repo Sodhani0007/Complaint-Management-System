@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 _temp = tempfile.TemporaryDirectory(prefix="complaints-tests-")
-os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", f"sqlite:///{Path(_temp.name) / 'test.db'}")
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{Path(_temp.name) / 'test.db'}"
 os.environ["DEMO_MODE"] = "true"
 os.environ["GROQ_API_KEY"] = "test_key_for_ci"
 os.environ["DEBUG"] = "false"

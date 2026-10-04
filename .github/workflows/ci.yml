@@ -28,6 +28,7 @@ jobs:
     name: Backend Tests (${{ matrix.database }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         database: [sqlite, postgres]
     services:
