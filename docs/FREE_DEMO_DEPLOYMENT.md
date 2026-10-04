@@ -10,7 +10,7 @@ Redis instance, paid database, or purchased domain.
 
 - Frontend: https://complaints-demo.onrender.com/
 - API: https://complaints-api-jxuj.onrender.com
-- Deployed branch: `feat/free-demo-deployment` (PR #1; not yet merged into `main`).
+- Deployment branch: `main` (PR #1 merged; both Render services follow `main`).
 - Verified on 2026-10-04: readiness, demo login, synthetic complaint save,
   list/detail retrieval, batch priority escalation, and live Groq text extraction.
 - The safety rule excludes a narrow grammar of explicit negative statements,
@@ -19,8 +19,7 @@ Redis instance, paid database, or purchased domain.
   understanding; human review remains necessary. Regression tests cover denials,
   mixed positive/negative reports, uncertainty, and reassessment through the API.
 
-The steps below describe the intended deployment from `main` after review.
-The current demo uses the feature branch until that review and merge are complete.
+The steps below describe deployment from `main` after review and passing CI.
 
 1. Create/sign in to Neon and Render using your own accounts. Do not send API keys
    or database passwords in a chat or commit them to Git.
