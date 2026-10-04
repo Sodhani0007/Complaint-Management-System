@@ -14,6 +14,7 @@ import type { ExtractedFields } from "../../types/complaint";
 export type ExtractionStatus = "idle" | "extracting" | "done" | "error";
 
 interface ExtractionState {
+  originalFields: ExtractedFields | null;
   status: ExtractionStatus;
   extractionId: string | null;
   confidenceScore: number | null;
@@ -23,6 +24,7 @@ interface ExtractionState {
 }
 
 const initialState: ExtractionState = {
+  originalFields: null,
   status: "idle",
   extractionId: null,
   confidenceScore: null,
@@ -82,6 +84,7 @@ const extractionSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(runFileExtraction.fulfilled, (state, action) => {
+        state.originalFields = action.payload.fields;
         state.status = "done";
         state.extractionId = action.payload.extractionId;
         state.confidenceScore = action.payload.confidence;
@@ -97,6 +100,7 @@ const extractionSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(runTextExtraction.fulfilled, (state, action) => {
+        state.originalFields = action.payload.fields;
         state.status = "done";
         state.extractionId = action.payload.extractionId;
         state.confidenceScore = action.payload.confidence;

@@ -11,7 +11,7 @@ import { InsightsPanel } from "./InsightsPanel";
 export function ComplaintForm() {
   const dispatch = useAppDispatch();
   const { fields, saveStatus, errorMessage, savedComplaint } = useAppSelector((s) => s.complaint);
-  const { extractionId, confidenceScore, modelUsed } = useAppSelector((s) => s.extraction);
+  const { extractionId, confidenceScore, modelUsed, originalFields } = useAppSelector((s) => s.extraction);
 
   const handleFieldChange = (field: keyof ExtractedFields, value: string) => {
     const isNumeric = field === "quantity_affected";
@@ -21,7 +21,7 @@ export function ComplaintForm() {
   const handleSave = () => {
     dispatch(
       submitComplaint({
-        extractionSnapshot: extractionId ? (fields as unknown as Record<string, unknown>) : null,
+        extractionSnapshot: extractionId ? (originalFields as unknown as Record<string, unknown>) : null,
         modelUsed,
         confidence: confidenceScore,
       })
