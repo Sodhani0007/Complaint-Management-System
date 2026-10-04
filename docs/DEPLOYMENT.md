@@ -1,5 +1,8 @@
 # Deployment Guide
 
+For the implemented free-tier configuration, use [Free demo deployment](FREE_DEMO_DEPLOYMENT.md).
+It supersedes the earlier alternatives below, including their migration and API URL notes.
+
 This project has three deployable pieces — frontend (static build), backend (FastAPI), and a
 database — plus the AI layer, which runs in-process inside the backend rather than as a separate
 service (see `docs/architecture.md` Step 3).

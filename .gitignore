@@ -49,4 +49,6 @@ yarn-error.log*
 # ===== Build / cache misc =====
 .cache/
 coverage/
+test-results/
+playwright-report/
 *.tsbuildinfo

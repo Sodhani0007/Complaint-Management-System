@@ -1,5 +1,10 @@
 # AI-Powered Customer Complaint Management System — Architecture
 
+The original intake design below is supplemented by
+[ADR 0001](decisions/0001-free-demo.md) and the
+[implemented free-demo deployment](FREE_DEMO_DEPLOYMENT.md). Those documents
+supersede the original authentication, migration, and deployment assumptions.
+
 ---
 
 ## STEP 3 — Software Architecture
