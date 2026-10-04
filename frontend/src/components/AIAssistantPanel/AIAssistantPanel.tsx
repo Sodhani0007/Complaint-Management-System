@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { runFileExtraction, runTextExtraction } from "../../store/slices/extractionSlice";
-import { populateFromExtraction } from "../../store/slices/complaintSlice";
+import { resetExtraction, runFileExtraction, runTextExtraction } from "../../store/slices/extractionSlice";
+import { populateFromExtraction, resetForm } from "../../store/slices/complaintSlice";
+import { emptyComplaintFields } from "../../types/complaint";
 import { Badge } from "../common/Badge";
 import { Card } from "../common/Card";
 import { ExtractionProgress } from "./ExtractionProgress";
@@ -40,6 +41,16 @@ export function AIAssistantPanel() {
       </div>
 
       <FileDropzone onFileSelected={handleFile} disabled={isExtracting} />
+
+      <button className="demo-sample" disabled={isExtracting} onClick={() => {
+        dispatch(resetForm()); dispatch(resetExtraction());
+        dispatch(populateFromExtraction({ ...emptyComplaintFields(),
+          product_name: "Demo Vitamin Tablets (synthetic)", batch_lot_number: "DEMO-001",
+          customer_name: "Synthetic Customer", complaint_source: "Demo", complaint_type: "Packaging",
+          description: "Synthetic example: damaged outer packaging; tablets appear intact.",
+          initial_severity: "Minor", priority: "Low", quantity_affected: 2,
+        }));
+      }}>Load synthetic sample (no AI call)</button>
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "16px 0" }}>
         <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }} />

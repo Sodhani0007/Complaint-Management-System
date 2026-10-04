@@ -46,13 +46,6 @@ INCOMPLETE_PAYLOAD = {
 }
 
 
-@pytest.fixture(scope="module")
-def client():
-    Base.metadata.create_all(bind=engine)
-    yield TestClient(app)
-    Base.metadata.drop_all(bind=engine)
-
-
 # --- Completeness Checker ---
 
 

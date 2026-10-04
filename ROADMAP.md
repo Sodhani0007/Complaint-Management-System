@@ -7,14 +7,19 @@ committed dates.
 
 - [ ] Root Cause Recommendation (bonus AI feature)
 - [ ] CAPA Recommendation (bonus AI feature)
-- [ ] Replace `Base.metadata.create_all` with proper Alembic migrations
+- [x] Replace `Base.metadata.create_all` with Alembic migrations
 - [ ] Backend test coverage beyond the current smoke/bonus-feature tests — a dedicated test for
       the LangGraph retry-loop routing logic in the extraction pipeline itself
 
 ## Mid-term
 
-- [ ] Authentication (`Depends(get_current_user)` — routers are already structured to accept it)
-- [ ] Complaint list/detail view with `react-router` (currently single-route by design)
+- [x] Authentication with expiring database-backed sessions and explicit shared demo access
+- [x] Basic complaint inbox/detail view (latest 20 records)
+- [ ] URL routing, search/filtering, and full pagination for the inbox
+- [ ] Organization isolation and investigator/manager permissions
+- [ ] Assignment, investigation notes, resolution, reopening, and audit events
+- [ ] Durable extraction jobs with retry/recovery
+- [ ] Versioned AI evaluation dataset and measured quality report
 - [ ] Completeness Checker's optional LLM warnings pass — currently best-effort/silent on failure;
       consider surfacing "warnings unavailable" in the UI rather than silently returning empty
 

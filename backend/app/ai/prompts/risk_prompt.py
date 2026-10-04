@@ -8,6 +8,12 @@ complaint triage logic:
   (discoloration, dissolution failure, packaging defect affecting product integrity).
 - Minor: cosmetic or labeling issues with no product quality or safety impact.
 
+Distinguish an actual or suspected safety event from an explicit denial. For
+example, "No injury or adverse event" does not establish a safety event. Assess
+the remaining defect; do not label it Critical merely because a negated safety
+term appears. Uncertainty (e.g. "contamination cannot be ruled out") still merits
+cautious assessment. A denial must not cancel a separate positive safety report.
+
 Priority (High/Medium/Low) should reflect urgency of investigation, generally
 correlating with severity but consider business context provided.
 

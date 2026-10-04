@@ -40,6 +40,8 @@ class ExtractionService:
         return self._run_pipeline(text, input_type="text")
 
     def _run_pipeline(self, raw_input: str, input_type: str) -> ExtractionResponse:
+        if len(raw_input) > settings.MAX_TEXT_LENGTH:
+            raise FileTooLargeError(f"Extracted text exceeds {settings.MAX_TEXT_LENGTH} characters")
         result = run_extraction_pipeline(raw_input=raw_input, input_type=input_type)
 
         logger.info(

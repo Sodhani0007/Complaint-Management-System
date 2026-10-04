@@ -7,13 +7,15 @@ in services/repositories/ai — main.py should never grow business logic.
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.v1.router import api_router
 from app.config import settings
+from app.core.http_limits import BodyLimitMiddleware
 from app.core.logging import configure_logging
-from app.db.base import Base
 from app.db.session import engine
 
 configure_logging(debug=settings.DEBUG)
@@ -24,16 +26,11 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info(f"{settings.APP_NAME} starting in {settings.ENVIRONMENT} mode")
 
-    # Model imports registered here (not at module top) so Base.metadata
-    # actually knows about every table before create_all runs.
-    from app.models import ai_extraction, batch, complaint, complaint_document, product  # noqa: F401
+    # Register relationships before serving requests. Migration imports also
+    # register the full schema independently of application startup.
+    from app.models import ai_extraction, auth, batch, complaint, complaint_document, product  # noqa: F401
 
-    # create_all is a demo/dev convenience — it only creates tables that
-    # don't exist and never alters existing ones. A real production
-    # deployment would use Alembic migrations (already in requirements.txt)
-    # instead of this, since create_all can't handle schema changes safely.
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables verified/created")
+    # Schema changes are explicit Alembic migrations, run before serving traffic.
 
     yield  # application runs here
 
@@ -41,6 +38,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG, lifespan=lifespan)
+
+app.add_middleware(BodyLimitMiddleware, max_bytes=(settings.MAX_UPLOAD_SIZE_MB + 1) * 1024 * 1024)
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,6 +52,28 @@ app.add_middleware(
 app.include_router(api_router)
 
 
+@app.middleware("http")
+async def response_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "app": settings.APP_NAME, "environment": settings.ENVIRONMENT}
+
+
+@app.get("/ready")
+def readiness_check():
+    try:
+        with engine.connect() as connection:
+            revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
+            connection.execute(text("SELECT id FROM users LIMIT 1"))
+        if revision != "0002":
+            raise HTTPException(503, "Database migrations are not current")
+    except SQLAlchemyError as exc:
+        raise HTTPException(503, "Database unavailable or not migrated") from exc
+    return {"status": "ready"}

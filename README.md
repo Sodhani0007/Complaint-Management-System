@@ -1,5 +1,20 @@
 # AI-Powered Customer Complaint Management System
 
+## Free demo milestone
+
+Includes expiring sessions, owner login, synthetic sample mode, a saved-complaint
+inbox, persistent usage caps, Alembic migrations, and a Render Blueprint with a
+separately provisioned Neon database.
+
+**[Open the live demo](https://complaints-demo.onrender.com/)** and choose **Enter demo**.
+The free API may take a little time to wake after inactivity. Use synthetic data only.
+See the [deployment guide](docs/FREE_DEMO_DEPLOYMENT.md) for setup and verification.
+
+All demo users share synthetic records. Organization isolation, investigation
+workflow, durable jobs, and server-side extraction provenance remain planned work.
+
+![Demo landing page](docs/images/demo-desktop.png)
+
 AI-assisted intake and triage for pharmaceutical quality-assurance complaints. Upload or paste a
 complaint document; a LangGraph-orchestrated pipeline extracts structured fields and an initial
 risk assessment into an editable review form — human-in-the-loop by design, never auto-saved
@@ -17,8 +32,8 @@ without review.
   keywords
 - **Batch-aware priority escalation** — a second complaint on a batch that already has one on
   file automatically escalates priority
-- **Full audit trail** — every AI extraction attempt is recorded separately from the confirmed
-  complaint record
+- **Save-time extraction snapshot** — an optional client-supplied AI snapshot is saved
+  atomically with the complaint; this is not a record of every extraction attempt
 
 ## Architecture
 
@@ -103,7 +118,7 @@ cd backend
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # fill in GROQ_API_KEY and DATABASE_URL
-uvicorn app.main:app --reload
+python -m app.start
 ```
 
 ### Frontend Setup
@@ -135,10 +150,9 @@ docker compose up --build
 
 ## Database Setup
 
-Tables are auto-created on backend startup for local/demo use (`Base.metadata.create_all` in
-`app/main.py`). This is a demo convenience, not a production migration strategy — see
-[`docs/architecture.md`](docs/architecture.md) for the full schema and the note on why Alembic
-would replace this in production.
+Schema changes use Alembic. `python -m app.start` migrates and seeds the demo before
+serving traffic. For an existing database, follow the baseline instructions in
+[Free demo deployment](docs/FREE_DEMO_DEPLOYMENT.md) before starting the new version.
 
 ## Running AI Services
 

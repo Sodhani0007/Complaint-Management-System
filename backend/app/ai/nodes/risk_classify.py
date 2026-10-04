@@ -7,11 +7,12 @@ keywords, severity is force-set to Critical regardless of what the model
 returned. This is a deliberate design decision (see architecture doc, Step
 11) — an LLM should never be the sole gate on a safety-critical
 classification in a regulated domain. The business rule is intentionally
-simple and auditable (keyword match), not another AI call, precisely because
-it needs to be a hard guarantee, not a probabilistic one.
+conservative and auditable: only explicit, complete negative statements are
+excluded. Ambiguous wording still triggers review; this is not clinical NLP.
 """
 
 import logging
+import re
 
 from app.ai.llm_client import LLMJSONError, call_llm_for_json
 from app.ai.prompts.risk_prompt import RISK_SYSTEM_PROMPT, build_risk_user_prompt
@@ -32,9 +33,23 @@ SAFETY_KEYWORDS = [
     "mix up",
 ]
 
+# Restrict negation to a small grammar of complete negative statements. Do not
+# use a sliding word window: "no improvement after an adverse event" is a risk.
+_NEGATED_TERM = (
+    r"(?:injur(?:y|ies)|adverse events?|allergic reactions?|contamination|"
+    r"hospitalizations?|anaphylaxis|anaphylactic reactions?|wrong products?|mix[- ]ups?)"
+)
+_EXPLICIT_NEGATION = re.compile(
+    rf"(?:^|[.!?;\n])\s*no\s+(?:evidence of\s+)?{_NEGATED_TERM}"
+    rf"(?:\s*(?:,\s*(?:(?:and|or)\s+)?|(?:and|or)\s+){_NEGATED_TERM})*"
+    r"(?:\s+(?:(?:was|were|has been|have been)\s+)?(?:reported|observed|detected))?"
+    r"\s*(?=[.!?;\n]|$)",
+    re.IGNORECASE,
+)
+
 
 def _contains_safety_keyword(description: str) -> bool:
-    text = description.lower()
+    text = _EXPLICIT_NEGATION.sub(" ", description).lower()
     return any(kw in text for kw in SAFETY_KEYWORDS)
 
 

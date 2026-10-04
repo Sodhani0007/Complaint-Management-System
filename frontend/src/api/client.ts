@@ -10,9 +10,38 @@ import type {
 } from "../types/complaint";
 
 const client = axios.create({
-  baseURL: "/api/v1",
-  timeout: 45000, // extraction can take a few seconds through the LangGraph retry loop
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
+  timeout: 180000, // Allows a sleeping free-tier server to start; UI explains the wait.
 });
+
+let sessionToken: string | null = null;
+export function setSessionToken(token: string | null) { sessionToken = token; }
+client.interceptors.request.use((config) => {
+  if (sessionToken) config.headers.Authorization = `Bearer ${sessionToken}`;
+  return config;
+});
+client.interceptors.response.use((response) => response, (error) => {
+  if (error.response?.status === 401 && sessionToken) {
+    sessionToken = null;
+    window.dispatchEvent(new Event("session-expired"));
+  }
+  return Promise.reject(error);
+});
+
+export interface Session { access_token: string; role: string; expires_in: number }
+export async function getAuthConfig() {
+  return (await client.get<{ demo_enabled: boolean; live_ai_enabled: boolean }>("/auth/config")).data;
+}
+export async function login(email: string, password: string) {
+  return (await client.post<Session>("/auth/login", { email, password })).data;
+}
+export async function enterDemo() {
+  return (await client.post<Session>("/auth/demo")).data;
+}
+export async function logout() { await client.post("/auth/logout"); }
+export async function listComplaints() {
+  return (await client.get<ComplaintRead[]>("/complaints", { params: { page_size: 20 } })).data;
+}
 
 export async function extractFromFile(file: File): Promise<ExtractionResponse> {
   const formData = new FormData();
@@ -24,9 +53,9 @@ export async function extractFromFile(file: File): Promise<ExtractionResponse> {
 }
 
 export async function extractFromText(text: string): Promise<ExtractionResponse> {
-  const { data } = await client.post<ExtractionResponse>("/complaints/extract", null, {
-    params: { text },
-  });
+  const formData = new FormData();
+  formData.append("text", text);
+  const { data } = await client.post<ExtractionResponse>("/complaints/extract", formData);
   return data;
 }
 
@@ -66,7 +95,10 @@ export async function getRiskAssessment(complaintId: number): Promise<RiskAssess
  * Redux slices should never need to know axios's error shape directly. */
 export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.detail ?? error.message ?? "Request failed";
+    const detail = error.response?.data?.detail;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) return detail.map((item) => `${item.loc?.slice(1).join(".")}: ${item.msg}`).join("; ");
+    return error.message || "Request failed";
   }
   return error instanceof Error ? error.message : "Unknown error";
 }

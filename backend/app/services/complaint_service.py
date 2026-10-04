@@ -108,6 +108,8 @@ class ComplaintService:
                 confidence_score=payload.ai_confidence or 0.0,
             )
 
+        self.repository.commit()
+
         logger.info(
             f"Complaint {saved.id} saved | batch={batch.lot_number} "
             f"| prior_complaints_on_batch={prior_complaint_count} "

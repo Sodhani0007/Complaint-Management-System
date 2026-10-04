@@ -68,8 +68,7 @@ class ComplaintRepository:
 
     def create_complaint(self, complaint: Complaint) -> Complaint:
         self.db.add(complaint)
-        self.db.commit()
-        self.db.refresh(complaint)
+        self.db.flush()
         return complaint
 
     def get_complaint(self, complaint_id: int) -> Complaint | None:
@@ -105,6 +104,8 @@ class ComplaintRepository:
             confidence_score=confidence_score,
         )
         self.db.add(record)
-        self.db.commit()
-        self.db.refresh(record)
+        self.db.flush()
         return record
+
+    def commit(self) -> None:
+        self.db.commit()

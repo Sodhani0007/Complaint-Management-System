@@ -7,7 +7,8 @@ No business logic and no direct DB/repository access should ever land here
 import logging
 import os
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.deps import get_complaint_service, get_extraction_service
 from app.core.exceptions import (
@@ -17,6 +18,7 @@ from app.core.exceptions import (
     NoInputProvidedError,
     UnsupportedFileTypeError,
 )
+from app.core.security import allow_ai, allow_write, current_user
 from app.schemas.bonus_features import (
     CompletenessCheckResult,
     DuplicateCheckResult,
@@ -30,13 +32,13 @@ from app.services.document_service import SUPPORTED_EXTENSIONS
 from app.services.extraction_service import ExtractionService
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/complaints", tags=["complaints"])
+router = APIRouter(prefix="/complaints", tags=["complaints"], dependencies=[Depends(current_user)])
 
 
-@router.post("/extract", response_model=ExtractionResponse)
+@router.post("/extract", response_model=ExtractionResponse, dependencies=[Depends(allow_ai)])
 async def extract_complaint(
     file: UploadFile | None = File(default=None),
-    text: str | None = None,
+    text: str | None = Form(default=None, max_length=20000),
     extraction_service: ExtractionService = Depends(get_extraction_service),
 ):
     if file is None and not text:
@@ -76,9 +78,9 @@ async def extract_complaint(
                     raise FileTooLargeError(f"File exceeds {max_bytes // (1024 * 1024)}MB limit")
                 chunks.append(chunk)
             file_bytes = b"".join(chunks)
-            return extraction_service.extract_from_file(file_bytes, ext)
+            return await run_in_threadpool(extraction_service.extract_from_file, file_bytes, ext)
 
-        return extraction_service.extract_from_text(text)
+        return await run_in_threadpool(extraction_service.extract_from_text, text)
 
     except UnsupportedFileTypeError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -88,12 +90,12 @@ async def extract_complaint(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- translate unexpected provider/parser errors at HTTP boundary
         logger.exception("Unexpected error during extraction")
         raise HTTPException(status_code=502, detail="AI extraction service unavailable, please try again") from e
 
 
-@router.post("", response_model=ComplaintRead, status_code=201)
+@router.post("", response_model=ComplaintRead, status_code=201, dependencies=[Depends(allow_write)])
 def create_complaint(
     payload: ComplaintCreate,
     service: ComplaintService = Depends(get_complaint_service),
@@ -123,7 +125,8 @@ def list_complaints(
 # --- Bonus AI features — all operate on an already-saved complaint ---
 
 
-@router.post("/{complaint_id}/completeness-check", response_model=CompletenessCheckResult)
+@router.post("/{complaint_id}/completeness-check", response_model=CompletenessCheckResult,
+             dependencies=[Depends(allow_ai)])
 def completeness_check(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
     try:
         return service.check_completeness(complaint_id)
@@ -131,7 +134,7 @@ def completeness_check(complaint_id: int, service: ComplaintService = Depends(ge
         raise HTTPException(status_code=404, detail=str(e)) from e
 
 
-@router.post("/{complaint_id}/summary", response_model=SummaryResult)
+@router.post("/{complaint_id}/summary", response_model=SummaryResult, dependencies=[Depends(allow_ai)])
 def complaint_summary(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
     try:
         return service.generate_summary(complaint_id)
@@ -147,7 +150,7 @@ def duplicate_check(complaint_id: int, service: ComplaintService = Depends(get_c
         raise HTTPException(status_code=404, detail=str(e)) from e
 
 
-@router.post("/{complaint_id}/risk-assessment", response_model=RiskAssessmentResult)
+@router.post("/{complaint_id}/risk-assessment", response_model=RiskAssessmentResult, dependencies=[Depends(allow_ai)])
 def risk_assessment(complaint_id: int, service: ComplaintService = Depends(get_complaint_service)):
     try:
         return service.get_risk_assessment(complaint_id)

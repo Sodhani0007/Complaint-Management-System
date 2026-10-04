@@ -15,14 +15,14 @@ Please include:
 
 This is a demo/assignment project, not a hardened production system. Notably:
 
-- **No authentication is implemented.** Routers are structured so `Depends(get_current_user)`
-  could be added without restructuring, but nothing gates access currently — do not deploy this
-  publicly without adding auth first.
+- **Authentication**: complaint endpoints require expiring bearer sessions. Public demo access
+  is explicitly enabled through `DEMO_MODE` and shares synthetic records among visitors.
+  There is no organization isolation. Do not use the demo for real customer data.
 - **Secrets**: `GROQ_API_KEY` and `DATABASE_URL` must be supplied via environment variables /
   `.env` (never committed — see `.gitignore`). `.env.example` contains placeholders only.
-- **File uploads**: validated for extension and size (`MAX_UPLOAD_SIZE_MB`), enforced via a
-  streaming size check that aborts as soon as the limit is exceeded rather than buffering the
-  whole file first — but uploaded content is not scanned for malicious payloads. Don't accept
+- **File uploads**: the entire request is bounded before parsing (upload limit plus 1 MB for
+  multipart overhead), and the file is checked again against `MAX_UPLOAD_SIZE_MB`. Extracted
+  text is capped before model calls. Content is not scanned for malicious payloads. Don't accept
   uploads from untrusted sources in a production deployment without adding that.
 - **Prompt injection**: complaint descriptions and other extracted text are interpolated directly
   into LLM prompts (`app/ai/prompts/*.py`) with no sanitization beyond triple-quote fencing, which
@@ -34,6 +34,10 @@ This is a demo/assignment project, not a hardened production system. Notably:
   manipulated into saying — but this is not a complete mitigation. Not fixed in this pass;
   documenting honestly rather than claiming it's handled.
 - **CORS**: `CORS_ORIGINS` defaults to localhost dev origins; update this before deploying.
+- **Usage**: database-backed global quotas survive restarts. Failed calls count, and one
+  visitor can exhaust the shared allowance. These limits do not replace provider quotas.
+- **Audit**: extraction snapshots are client-supplied at save time, not independent evidence
+  of every extraction attempt. A future server-side provenance feature is required for that.
 
 ## Supported Versions
 
